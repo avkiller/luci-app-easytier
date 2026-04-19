@@ -1082,7 +1082,7 @@ function download_easytier()
 			return
 		end
 		
-		download_url = proxy .. "https://github.com/EasyTier/EasyTier/releases/download/" .. version .. "/easytier-linux-" .. arch .. "-" .. version .. ".zip"
+		download_url = proxy .. "https://github.com/avkiller/EasyTier/releases/download/" .. version .. "/easytier-linux-" .. arch .. "-" .. version .. ".zip"
 		
 		-- 删除之前的失败文件
 		os.execute("rm -f " .. zip_file)

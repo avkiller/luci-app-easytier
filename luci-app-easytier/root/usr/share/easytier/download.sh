@@ -55,7 +55,7 @@ download_binary() {
 	local cpucore="$2"
 	local path="$3"
 	local proxys=$(get_proxy_list)
-	local download_url="https://github.com/EasyTier/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip"
+	local download_url="https://github.com/avkiller/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip"
 	
 	mkdir -p "$path"
 	
