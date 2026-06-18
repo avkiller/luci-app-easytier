@@ -41,6 +41,7 @@ jobs:
           github_token: ${{secrets.GITHUB_TOKEN}}
           run_id: ${{ env.CORE_ID }}
           repo: avkiller/luci-app-easytier
+          name: aarch64_generic-openwrt-24.10
           path: release_assets
       - name: Prepare Assets for EasyTier Release
         run: |
