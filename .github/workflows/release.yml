@@ -2,17 +2,17 @@ name: luci app EasyTier Release by fireworld
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version for this release'
-        type: string
-        default: 'v2.6.4'
-        required: true
-      make_latest:
-        description: 'Mark this release as latest'
-        type: boolean
-        default: true
-        required: true
+    # inputs:
+    #   version:
+    #     description: 'Version for this release'
+    #     type: string
+    #     default: 'v2.6.4'
+    #     required: true
+    #   make_latest:
+    #     description: 'Mark this release as latest'
+    #     type: boolean
+    #     default: true
+    #     required: true
 
 permissions:
   contents: write
@@ -43,6 +43,7 @@ jobs:
           repo: avkiller/luci-app-easytier
           name: aarch64_generic-openwrt-24.10
           path: release_assets
+
       - name: Prepare Assets for EasyTier Release
         run: |
           mkdir -p dist/
@@ -74,3 +75,10 @@ jobs:
           
           echo "📂 准备上传到 Cloudflare Pages 的文件列表："
           ls -la dist/
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v4.0.0
+        with:
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # 更改 project-name 为 easytier
+          command: pages deploy dist --project-name=easytier
