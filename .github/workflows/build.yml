@@ -93,6 +93,9 @@ jobs:
           NO_REFRESH_CHECK: 1
           NO_SHFMT_CHECK: 1
           MAKEFLAGS: -j$(nproc)
+          INDEX: 1
+          KEY_BUILD: ${{ secrets.KEY_BUILD }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           V: s
 
       - name: Upload artifacts
