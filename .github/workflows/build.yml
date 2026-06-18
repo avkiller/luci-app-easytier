@@ -51,7 +51,7 @@ jobs:
           # - mipsel_24kc_24kf
           # - mipsel_74kc
           # - mipsel_mips32
-          - x86_64
+          # - x86_64
           
         sdk:
           - openwrt-24.10
@@ -112,7 +112,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -127,7 +127,7 @@ jobs:
           echo "build_time=$(TZ=UTC-8 date '+%Y年%m月%d日%H:%M:%S' | jq -sRr @uri)" >> $GITHUB_ENV
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
             token: ${{ secrets.GITHUB_TOKEN }}        
             tag_name: ${{ env.TAG }}
