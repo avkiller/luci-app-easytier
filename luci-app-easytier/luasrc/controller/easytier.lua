@@ -147,7 +147,7 @@ function act_status()
 	end
 	
 	e.no_tun = uci:get_first("easytier", "easytier", "no_tun") == "1"
-	e.dev_name = uci:get_first("easytier", "easytier", "dev_name") or "tun0"
+	e.dev_name = uci:get_first("easytier", "easytier", "tunname") or "tun0"
 
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
@@ -163,7 +163,7 @@ function get_upload_config()
 		easytierbin = uci:get_first("easytier", "easytier", "easytierbin") or "/usr/bin/easytier-core",
 		webbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web",
 		github_proxys = {},
-		fallback_version = uci:get_first("easytier", "easytier", "fallback_version") or "v2.6.2"
+		fallback_version = uci:get_first("easytier", "easytier", "fallback_version") or "v2.6.4"
 	}
 	
 	-- 读取代理列表（list 类型）
@@ -200,7 +200,7 @@ function save_upload_config()
 	-- 保存配置
 	uci:set("easytier", "@easytier[0]", "easytierbin", data.easytierbin or "/usr/bin/easytier-core")
 	uci:set("easytier", "@easytier[0]", "webbin", data.webbin or "/usr/bin/easytier-web")
-	uci:set("easytier", "@easytier[0]", "fallback_version", data.fallback_version or "v2.6.2")
+	uci:set("easytier", "@easytier[0]", "fallback_version", data.fallback_version or "v2.6.4")
 	
 	-- 删除旧的代理列表
 	uci:delete("easytier", "@easytier[0]", "github_proxys")
