@@ -120,9 +120,13 @@ jobs:
         run: |
           sudo timedatectl set-timezone "Asia/Shanghai"
           mkdir -p release
+          shopt -s nullglob
           for dir in artifacts/*; do
             name=$(basename "$dir")
-            zip -j "release/EasyTier-${{ env.TAG }}-${name}.zip" "$dir"/*.ipk "$dir"/*.apk 2>/dev/null || true
+            files=("$dir"/*.ipk "$dir"/*.apk "$dir"/*.md)
+            if [ ${#files[@]} -gt 0 ]; then
+              zip -j "release/EasyTier-${{ env.TAG }}-${name}.zip" "${files[@]}"
+            fi
           done
           echo "build_time=$(TZ=UTC-8 date '+%Y年%m月%d日%H:%M:%S' | jq -sRr @uri)" >> $GITHUB_ENV
 
@@ -133,4 +137,3 @@ jobs:
             tag_name: ${{ env.TAG }}
             files: release/*.zip
  
-
