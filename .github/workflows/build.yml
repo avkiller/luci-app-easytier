@@ -119,6 +119,9 @@ jobs:
       - name: Prepare release info
         run: |
           sudo timedatectl set-timezone "Asia/Shanghai"
+          echo "当前目录文件列表"
+          ls -la 
+
           mkdir -p release
           shopt -s nullglob
           for dir in artifacts/*; do
@@ -129,11 +132,14 @@ jobs:
             fi
           done
           echo "build_time=$(TZ=UTC-8 date '+%Y年%m月%d日%H:%M:%S' | jq -sRr @uri)" >> $GITHUB_ENV
+          echo "release 目录列表"
+          ls -la release/
 
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
             token: ${{ secrets.GITHUB_TOKEN }}        
             tag_name: ${{ env.TAG }}
+            overwrite_files: true
             files: release/*.zip
  
