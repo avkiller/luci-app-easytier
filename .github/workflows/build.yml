@@ -7,7 +7,7 @@ on:
       tag:
         description: '请填写发布Releases的版本号（留空不发布）'
         required: false
-        default: ''
+        default: 'v2.6.4'
       text:
         description: '请填写发布的说明'
         required: false
