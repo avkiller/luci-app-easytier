@@ -120,7 +120,16 @@ jobs:
         run: |
           sudo timedatectl set-timezone "Asia/Shanghai"
           echo "当前目录文件列表"
-          ls -la 
+          ls -la
+          ls -la artifacts
+
+          # 1. 检查并解压（适配新版本行为）
+          if [ -f "artifacts/aarch64_generic-openwrt-24.10.zip" ]; then
+             echo "📦 Artifact is a zip file, extracting..."
+             unzip -q artifacts/aarch64_generic-openwrt-24.10.zip -d artifacts/
+            # 删除原始zip，避免后续误处理
+             rm artifacts/aarch64_generic-openwrt-24.10.zip
+          fi
 
           mkdir -p release
           shopt -s nullglob
