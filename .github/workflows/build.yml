@@ -124,12 +124,20 @@ jobs:
           ls -la artifacts
 
           # 1. 检查并解压（适配新版本行为）
-          if [ -f "artifacts/aarch64_generic-openwrt-24.10.zip" ]; then
-             echo "📦 Artifact is a zip file, extracting..."
-             unzip -q artifacts/aarch64_generic-openwrt-24.10.zip -d artifacts/
-            # 删除原始zip，避免后续误处理
-             rm artifacts/aarch64_generic-openwrt-24.10.zip
-          fi
+          # if [ -f "artifacts/aarch64_generic-openwrt-24.10.zip" ]; then
+          #    echo "📦 Artifact is a zip file, extracting..."
+          #    unzip -q artifacts/aarch64_generic-openwrt-24.10.zip -d artifacts/
+          #   # 删除原始zip，避免后续误处理
+          #    rm artifacts/aarch64_generic-openwrt-24.10.zip
+          # fi
+          echo "📦 检查并解压所有 artifact 压缩包..."
+          for zip_file in artifacts/*.zip; do
+            if [ -f "$zip_file" ]; then
+              echo "  解压: $(basename "$zip_file")"
+              unzip -q "$zip_file" -d artifacts/
+              rm -f "$zip_file"
+            fi
+          done
 
           mkdir -p release
           shopt -s nullglob
