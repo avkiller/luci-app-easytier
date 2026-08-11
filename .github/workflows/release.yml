@@ -58,12 +58,12 @@ jobs:
           mkdir -p dist/
           
           # 拷贝文件到子目录
-          cp -r aarch64/* dist/ 2>/dev/null || echo "⚠️ aarch64/ 目录不存在或为空"
-          cp -r x86_64/* dist/ 2>/dev/null || echo "⚠️ x86_64/ 目录不存在或为空"
-
+          cp -r aarch64 dist/ 2>/dev/null || echo "⚠️ aarch64/ 目录不存在或为空"
+          cp -r x86_64 dist/ 2>/dev/null || echo "⚠️ x86_64/ 目录不存在或为空"
           echo "📂 dist/ 目录结构:"
-          tree dist/ || find dist -type f
-
+          ls -la dist/
+          ls -la dist/aarch64/ 2>/dev/null || echo "dist/aarch64/ 不存在"
+          ls -la dist/x86_64/ 2>/dev/null || echo "dist/x86_64/ 不存在"
           
           # 2. 重命名一些arm64文件供脚本直接下载 
           SOURCE_FILE_NOWEB=$(ls dist/aarch64/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
