@@ -70,6 +70,36 @@ jobs:
               echo "<li><a href='./$file'>$file</a></li>" >> dist/index.html
             fi
           done
+
+          SOURCE_FILE_NOWEB=$(ls dist/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_MAIN=$(ls dist/easytier_[0-9]*_aarch64_generic.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_LUCI=$(ls dist/luci-app-easytier*.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_I18N=$(ls dist/luci-i18n-easytier*.ipk 2>/dev/null | head -n1)
+
+          # 如果找到了，就复制；否则给出提示
+          if [ -n "$SOURCE_FILE_NOWEB" ]; then
+            cp -v "$SOURCE_FILE_NOWEB" dist/easytier_noweb_aarch64_generic.ipk
+          else
+            echo "⚠️ 没有找到 easytier-noweb 包，跳过创建通用副本"
+          fi
+
+          if [ -n "$SOURCE_FILE_MAIN" ]; then
+            cp -v "$SOURCE_FILE_MAIN" dist/easytier_main_aarch64_generic.ipk
+          else
+            echo "⚠️ 没有找到 easytier主包，跳过创建通用副本"
+          fi
+
+          if [ -n "$SOURCE_FILE_LUCI" ]; then
+            cp -v "$SOURCE_FILE_LUCI" dist/luci-app-easytier_all.ipk
+          else
+            echo "⚠️ 没有找到 luci easytier，跳过创建通用副本"
+          fi
+
+           if [ -n "$SOURCE_FILE_I18N" ]; then
+            cp -v "$SOURCE_FILE_I18N" dist/luci-i18n-easytier-zh-cn.ipk
+          else
+            echo "⚠️ 没有找到 luci easytier中文包，跳过创建通用副本"
+          fi
           
           echo "</ul></body></html>" >> dist/index.html
           
