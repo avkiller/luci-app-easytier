@@ -35,34 +35,60 @@ jobs:
           echo "Core Previous successful run IDs: $core_run_id"
           echo "CORE_ID=$core_run_id" >> $GITHUB_ENV
 
-      - name: Download Core Artifact
+      - name: Download Core Artifact aarch64
         uses: dawidd6/action-download-artifact@v21
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           run_id: ${{ env.CORE_ID }}
           repo: avkiller/luci-app-easytier
           name: aarch64_generic-openwrt-24.10
-          path: release_assets
+          path: aarch64
+          
+      - name: Download Core Artifact x86_64
+        uses: dawidd6/action-download-artifact@v21
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          run_id: ${{ env.CORE_ID }}
+          repo: avkiller/luci-app-easytier
+          name:  x86_64-openwrt-24.10.zip
+          path: x86_64
 
       - name: Prepare Assets for EasyTier Release
         run: |
           mkdir -p dist/
           
-          # 1. 寻找所有相关的 ipk, apk, gz, sig, json, manifest 并强制扁平化复制到 dist/ 根目录下
-          find release_assets/ -type f \( \
-            -name "*.ipk" -o \
-            -name "*.apk" -o \
-            -name "*.gz" -o \
-            -name "*.adb" -o \
-            -name "*.sig" -o \
-            -name "*.json" -o \
-            -name "*.manifest" \
-          \) -exec cp {} dist/ \;
-          # 2. 重命名一些文件供脚本直接下载 
-          SOURCE_FILE_NOWEB=$(ls dist/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
-          SOURCE_FILE_MAIN=$(ls dist/easytier_[0-9]*_aarch64_generic.ipk 2>/dev/null | head -n1)
-          SOURCE_FILE_LUCI=$(ls dist/luci-app-easytier*.ipk 2>/dev/null | head -n1)
-          SOURCE_FILE_I18N=$(ls dist/luci-i18n-easytier*.ipk 2>/dev/null | head -n1)
+          # 定义需要处理的后缀列表
+          suffixes="ipk apk gz sig json manifest adb"
+
+          # 处理每个架构目录
+          for arch_dir in aarch64 x86_64; do
+            if [ ! -d "$arch_dir" ]; then
+              echo "⚠️ 警告: 目录 $arch_dir 不存在，跳过"
+              continue
+            fi
+            
+            echo "📂 处理 $arch_dir/"
+            
+            # 遍历该目录下的所有文件（不递归子目录）
+            for file in "$arch_dir"/*; do
+              [ -f "$file" ] || continue
+              
+              # 检查文件后缀是否在列表中
+              for suffix in $suffixes; do
+                if [[ "$file" == *".$suffix" ]]; then
+                  base_name=$(basename "$file")
+                  cp "$file" "dist/${arch_dir}_${base_name}"
+                  echo "  ✅ 复制: ${arch_dir}_${base_name}"
+                  break
+                fi
+              done
+            done
+          done
+          # 2. 重命名一些arm64文件供脚本直接下载 
+          SOURCE_FILE_NOWEB=$(ls dist/aarch64/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_MAIN=$(ls dist/aarch64/easytier_[0-9]*_aarch64_generic.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_LUCI=$(ls dist/aarch64/luci-app-easytier*.ipk 2>/dev/null | head -n1)
+          SOURCE_FILE_I18N=$(ls dist/aarch64/luci-i18n-easytier*.ipk 2>/dev/null | head -n1)
 
           # 2.1 如果找到了，就复制；否则给出提示
           if [ -n "$SOURCE_FILE_NOWEB" ]; then
