@@ -57,33 +57,14 @@ jobs:
         run: |
           mkdir -p dist/
           
-          # 定义需要处理的后缀列表
-          suffixes="ipk apk gz sig json manifest adb"
+          # 拷贝文件到子目录
+          cp -r aarch64/* dist/ 2>/dev/null || echo "⚠️ aarch64/ 目录不存在或为空"
+          cp -r x86_64/* dist/ 2>/dev/null || echo "⚠️ x86_64/ 目录不存在或为空"
 
-          # 处理每个架构目录
-          for arch_dir in aarch64 x86_64; do
-            if [ ! -d "$arch_dir" ]; then
-              echo "⚠️ 警告: 目录 $arch_dir 不存在，跳过"
-              continue
-            fi
-            
-            echo "📂 处理 $arch_dir/"
-            
-            # 遍历该目录下的所有文件（不递归子目录）
-            for file in "$arch_dir"/*; do
-              [ -f "$file" ] || continue
-              
-              # 检查文件后缀是否在列表中
-              for suffix in $suffixes; do
-                if [[ "$file" == *".$suffix" ]]; then
-                  base_name=$(basename "$file")
-                  cp "$file" "dist/${arch_dir}_${base_name}"
-                  echo "  ✅ 复制: ${arch_dir}_${base_name}"
-                  break
-                fi
-              done
-            done
-          done
+          echo "📂 dist/ 目录结构:"
+          tree dist/ || find dist -type f
+
+          
           # 2. 重命名一些arm64文件供脚本直接下载 
           SOURCE_FILE_NOWEB=$(ls dist/aarch64/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
           SOURCE_FILE_MAIN=$(ls dist/aarch64/easytier_[0-9]*_aarch64_generic.ipk 2>/dev/null | head -n1)
