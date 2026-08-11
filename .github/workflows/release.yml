@@ -58,25 +58,13 @@ jobs:
             -name "*.json" -o \
             -name "*.manifest" \
           \) -exec cp {} dist/ \;
-          
-          # 2. 自动生成 index.html (文案更新为 EasyTier)
-          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>EasyTier Feed</title><style>body{font-family:sans-serif;padding:40px;background:#f4f5f7;}h1{color:#333;}ul{list-style:none;padding:0;}li{background:#fff;margin:8px 0;padding:12px 20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.05);}a{color:#2f80ed;text-decoration:none;font-weight:bold;font-family:monospace;}a:hover{text-decoration:underline;}</style></head><body>' > dist/index.html
-          echo "<h1>📦 EasyTier's Feed & APK 下载列表</h1>" >> dist/index.html
-          echo "<ul>" >> dist/index.html
-          
-          # 3. 遍历生成超链接（排除 index.html 自身）
-          for file in $(ls dist/); do
-            if [ "$file" != "index.html" ]; then
-              echo "<li><a href='./$file'>$file</a></li>" >> dist/index.html
-            fi
-          done
-
+          # 2. 重命名一些文件供脚本直接下载 
           SOURCE_FILE_NOWEB=$(ls dist/easytier-noweb_*_aarch64_generic.ipk 2>/dev/null | head -n1)
           SOURCE_FILE_MAIN=$(ls dist/easytier_[0-9]*_aarch64_generic.ipk 2>/dev/null | head -n1)
           SOURCE_FILE_LUCI=$(ls dist/luci-app-easytier*.ipk 2>/dev/null | head -n1)
           SOURCE_FILE_I18N=$(ls dist/luci-i18n-easytier*.ipk 2>/dev/null | head -n1)
 
-          # 如果找到了，就复制；否则给出提示
+          # 2.1 如果找到了，就复制；否则给出提示
           if [ -n "$SOURCE_FILE_NOWEB" ]; then
             cp -v "$SOURCE_FILE_NOWEB" dist/easytier_noweb_aarch64_generic.ipk
           else
@@ -101,8 +89,45 @@ jobs:
             echo "⚠️ 没有找到 luci easytier中文包，跳过创建通用副本"
           fi
           
-          echo "</ul></body></html>" >> dist/index.html
+          # 3. 自动生成 index.html (文案更新为 EasyTier)
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>EasyTier Feed</title><style>body{font-family:sans-serif;padding:40px;background:#f4f5f7;}h1{color:#333;}ul{list-style:none;padding:0;}li{background:#fff;margin:8px 0;padding:12px 20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.05);}a{color:#2f80ed;text-decoration:none;font-weight:bold;font-family:monospace;}a:hover{text-decoration:underline;}</style></head><body>' > dist/index.html
+          echo "<h1>📦 EasyTier's Feed & APK 下载列表</h1>" >> dist/index.html
+          echo "<ul>" >> dist/index.html
           
+          # 4. 遍历生成超链接（排除 index.html 自身）
+          # for file in $(ls dist/); do
+          #   if [ "$file" != "index.html" ]; then
+          #     echo "<li><a href='./$file'>$file</a></li>" >> dist/index.html
+          #   fi
+          # done 
+          # 遍历生成超链接
+          for file in $(ls dist/); do
+            if [ "$file" != "index.html" ]; then
+              # 获取文件的修改时间（格式：YYYY-MM-DD HH:MM:SS）
+              # 方法1: 使用 stat -c（Linux 常见）
+              mtime=$(stat -c '%y' "dist/$file" 2>/dev/null | cut -d'.' -f1 | sed 's/-/./g')
+        
+              # 方法2: 如果 stat -c 不支持（macOS），尝试 stat -f
+              if [ -z "$mtime" ]; then
+                mtime=$(stat -f '%Sm' "dist/$file" 2>/dev/null)
+              fi
+        
+              # 方法3: 如果都获取不到，使用 ls 作为备选
+              if [ -z "$mtime" ]; then
+                mtime=$(ls -l --time-style='+%Y.%m.%d %H:%M:%S' "dist/$file" 2>/dev/null | awk '{print $6, $7}')
+              fi
+        
+              # 如果还是获取不到，使用当前时间
+              if [ -z "$mtime" ]; then
+                mtime=$(date '+%Y.%m.%d %H:%M:%S')
+              fi
+        
+              # 添加文件名和修改时间到列表
+              echo "<li><a href='./$file'>$file</a> <span style='color:#888;font-size:0.8em;'>[$mtime]</span></li>" >> dist/index.html
+            fi
+          done
+           
+          echo "</ul></body></html>" >> dist/index.html
           echo "📂 准备上传到 Cloudflare Pages 的文件列表："
           ls -la dist/
       - name: Deploy to Cloudflare Pages
