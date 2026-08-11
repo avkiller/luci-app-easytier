@@ -94,37 +94,44 @@ jobs:
           echo "<h1>📦 EasyTier's Feed & APK 下载列表</h1>" >> dist/index.html
           echo "<ul>" >> dist/index.html
           
-          # 4. 遍历生成超链接（排除 index.html 自身）
-          # for file in $(ls dist/); do
-          #   if [ "$file" != "index.html" ]; then
-          #     echo "<li><a href='./$file'>$file</a></li>" >> dist/index.html
-          #   fi
-          # done 
           # 遍历生成超链接
-          for file in $(ls dist/); do
-            if [ "$file" != "index.html" ]; then
-              # 获取文件的修改时间（格式：YYYY-MM-DD HH:MM:SS）
-              # 方法1: 使用 stat -c（Linux 常见）
-              mtime=$(stat -c '%y' "dist/$file" 2>/dev/null | cut -d'.' -f1 | sed 's/-/./g')
-        
-              # 方法2: 如果 stat -c 不支持（macOS），尝试 stat -f
+          dirs=$(find dist/ -type f ! -name "index.html" -printf "%h\n" | sort -u)
+
+          for dir in $dirs; do
+            # 获取相对路径（用于显示标题）
+            rel_dir="${dir#dist/}"
+            if [ "$rel_dir" = "." ]; then
+              title="📂 根目录"
+            else
+              title="📂 $rel_dir"
+            fi
+    
+            echo "    <div class='section'>" >> dist/index.html
+            echo "        <div class='section-title'>$title</div>" >> dist/index.html
+            echo "        <ul>" >> dist/index.html
+    
+            # 列出该目录下的所有文件（排除 index.html）
+            find "$dir" -maxdepth 1 -type f ! -name "index.html" | while read -r file; do
+              filename=$(basename "$file")
+              # 获取修改时间
+              mtime=$(stat -c '%y' "$file" 2>/dev/null | cut -d'.' -f1 | sed 's/-/./g')
               if [ -z "$mtime" ]; then
-                mtime=$(stat -f '%Sm' "dist/$file" 2>/dev/null)
+                mtime=$(stat -f '%Sm' "$file" 2>/dev/null)
               fi
-        
-              # 方法3: 如果都获取不到，使用 ls 作为备选
               if [ -z "$mtime" ]; then
-                mtime=$(ls -l --time-style='+%Y.%m.%d %H:%M:%S' "dist/$file" 2>/dev/null | awk '{print $6, $7}')
+                mtime=$(ls -l --time-style='+%Y.%m.%d %H:%M:%S' "$file" 2>/dev/null | awk '{print $6, $7}')
               fi
-        
-              # 如果还是获取不到，使用当前时间
               if [ -z "$mtime" ]; then
                 mtime=$(date '+%Y.%m.%d %H:%M:%S')
               fi
         
-              # 添加文件名和修改时间到列表
-              echo "<li><a href='./$file'>$file</a> <span style='color:#888;font-size:0.8em;'>[$mtime]</span></li>" >> dist/index.html
-            fi
+              # 链接路径：相对于 dist/ 的路径
+              rel_path="${file#dist/}"
+              echo "            <li><a href='./$rel_path'>$filename</a> <span class='time'>[$mtime]</span></li>" >> dist/index.html
+            done
+    
+            echo "        </ul>" >> dist/index.html
+            echo "    </div>" >> dist/index.html
           done
            
           echo "</ul></body></html>" >> dist/index.html
